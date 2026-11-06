@@ -1,0 +1,34 @@
+# Dependências
+node_modules/
+jspm_packages/
+
+# Variáveis de Ambiente e Segredos (Ignora o .env mas permite o .env.example)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Builds e Compilações (Node, TypeScript, Next.js, Electron, Expo)
+dist/
+build/
+out/
+.next/
+.expo/
+*.tsbuildinfo
+
+# Logs e Arquivos de Sistema
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.DS_Store
+Thumbs.db
+
+# Arquivos do Editor (VS Code)
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

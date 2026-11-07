@@ -20,10 +20,10 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de Produtos/Peças de Crochê com a categoria
+-- Tabela de Produtos/Peças de Crochê com a categoria (coluna name atualizada)
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(150) NOT NULL,
+    name VARCHAR(150) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     category VARCHAR(50) NOT NULL, -- Ex: Tapetes, Amigurumis, Vestuário, Decoração

@@ -1,13 +1,15 @@
-'use client'
+'use client';
 
 import { useState } from "react";
 import Link from "next/link";
 import { BsCart } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { HiMenu, HiX } from "react-icons/hi";
+import { useCart } from "@/context/CartContext"; // Importa o hook do carrinho
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { totalItems, setIsCartOpen } = useCart(); // Obtém a quantidade e a função para abrir o modal
 
   return (
     <header className="z-50 fixed w-full flex justify-between items-center py-4 px-6 md:px-16 bg-[#0F172A] text-white border-b border-slate-800">
@@ -23,9 +25,20 @@ export default function Header() {
           <li><Link href="/products" className="hover:text-emerald-400 transition-colors">Produtos</Link></li>
           <li><Link href="/contact" className="hover:text-emerald-400 transition-colors">Contato</Link></li>
           <li>
-            <Link href="/cart" className="hover:text-emerald-400 transition-colors">
+            {/* Botão para abrir o CartModal no Desktop */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative hover:text-emerald-400 transition-colors flex items-center cursor-pointer"
+              title="Abrir carrinho"
+            >
               <BsCart className="h-5 w-5" />
-            </Link>
+              {/* Badge com a quantidade de itens */}
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 font-bold text-[10px] h-4 w-4 rounded-full flex items-center justify-center shadow-md">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
+            </button>
           </li>
           <li>
             <div className="flex items-center gap-x-2">
@@ -45,12 +58,23 @@ export default function Header() {
 
       {/* Botão do Menu Mobile (Hambúrguer) */}
       <div className="flex items-center gap-4 md:hidden">
-        <Link href="/cart" className="hover:text-emerald-400 transition-colors">
+        {/* Botão para abrir o CartModal no Mobile */}
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="relative hover:text-emerald-400 transition-colors flex items-center cursor-pointer"
+          title="Abrir carrinho"
+        >
           <BsCart className="h-6 w-6" />
-        </Link>
+          {/* Badge com a quantidade de itens no mobile */}
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 font-bold text-[10px] h-4 w-4 rounded-full flex items-center justify-center shadow-md">
+              {totalItems > 99 ? '99+' : totalItems}
+            </span>
+          )}
+        </button>
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="text-slate-200 hover:text-white focus:outline-none"
+          className="text-slate-200 hover:text-white focus:outline-none cursor-pointer"
           aria-label="Abrir Menu"
         >
           {isOpen ? <HiX className="h-7 w-7" /> : <HiMenu className="h-7 w-7" />}

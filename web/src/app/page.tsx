@@ -1,12 +1,16 @@
-'use client'
+'use client';
 
-import { Product, ProductService } from "@/service/productService";
+import { ProductService } from "@/service/productService";
+import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
+import { useCart } from "@/context/CartContext"; // Importa o hook do carrinho
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { addToCart } = useCart(); // Extrai a função addToCart do contexto global
 
   // Carregar produtos da API
   useEffect(() => {
@@ -163,13 +167,13 @@ export default function Home() {
                         Preço
                       </span>
                       <span className="text-xl font-bold text-slate-900">
-                        R$ {Number(product.price).toFixed(2)}
+                        R$ {Number(product.price).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
 
                     <button 
-                      onClick={() => alert(`Produto ${product.name} adicionado ao carrinho!`)}
-                      className="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl shadow transition duration-200 active:scale-[0.98]"
+                      onClick={() => addToCart(product)}
+                      className="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl shadow transition duration-200 active:scale-[0.98] cursor-pointer"
                     >
                       Comprar
                     </button>

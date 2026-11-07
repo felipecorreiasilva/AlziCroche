@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaSearch, FaShoppingBag, FaHeart, FaSpinner } from "react-icons/fa";
-import { ProductService, Product } from "@/service/productService";
+import { ProductService } from "@/service/productService";
 import { FavoriteService } from "@/service/favoriteService";
 import { useAuth } from "@/context/AuthContext";
+import { Product } from "@/types/product";
 
 export default function ProductsPage() {
     const { isAuthenticated } = useAuth() as any;

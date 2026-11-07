@@ -3,7 +3,7 @@ import { CgProfile } from "react-icons/cg";
 
 export default function Header() {
   return (
-    <header className="flex justify-between py-4 px-16 items-center bg-[#0F172A] text-white">
+    <header className="fixed w-full flex justify-between py-4 px-16 items-center bg-[#0F172A] text-white">
       <a href="/">
         <img className="h-16 w-auto object-contain" src="logo.png" alt="AlziCrochê" />
       </a>

@@ -25,26 +25,26 @@ VALUES
     'Bolsa tiracolo artesanal em tons de marrom e bege, estruturada com alça longa e detalhe de flor em crochê com pérola.', 
     149.90, 
     'Bolsas', 
-    '/uploads/products/bolsa-marrom-texturizada.jpg'
+    '/uploads/products/bolsa-marrom-texturizada.jpeg'
 ),
 (
     'Bolsa Transversal Pêssego e Bege', 
     'Bolsa charmosa em tons pastéis de pêssego e bege, equipada com alça confortável e aplicação delicada de flor artesanal.', 
     139.90, 
     'Bolsas', 
-    '/uploads/products/bolsa-pessego.jpg'
+    '/uploads/products/bolsa-pessego.jpeg'
 ),
 (
     'Bolsa Saco Azul Degradê', 
     'Bolsa modelo saco confeccionada em fios azul royal e marinho com efeito degradê e fechamento ajustável por cordão trançado.', 
     129.90, 
     'Bolsas', 
-    '/uploads/products/bolsa-saco-azul.jpg'
+    '/uploads/products/bolsa-saco-azul.jpeg'
 ),
 (
     'Bolsa de Ombro Geométrica Caramelo', 
     'Bolsa sofisticada em tom caramelo com padrão geométrico em relevo, alça trabalhada e placa metálica personalizada "Feito à Mão".', 
     169.90, 
     'Bolsas', 
-    '/uploads/products/bolsa-geometrica-caramelo.jpg'
+    '/uploads/products/bolsa-geometrica-caramelo.jpeg'
 );

@@ -1,13 +1,20 @@
--- Inserir usuário administrador padrão para associar aos produtos. Senha Padrão: 12345678
-INSERT INTO users (id, name, email, password_hash, role, image_url, phone) 
+-- Inserir usuário administrador padrão com o endereço real de Uberlândia - MG
+INSERT INTO users (id, name, email, password_hash, role, image_url, phone, cep, city, state, neighborhood, address, number, complement) 
 VALUES (
     1, 
     'Alzi Administradora', 
     'admin@alzicroche.com', 
     '$2b$10$7h3pvq9oW3GAIQR6kwAY/OmUli/9spQmtVSTKEgJlWklygzF91H3y', 
     'admin', 
-    '/uploads/users/perfil-admin.jpg', 
-    '75988158166'
+    NULL, 
+    '75988158166',
+    '38413-675',
+    'Uberlândia',
+    'MG',
+    'Panorama',
+    'Rua do Calistemon',
+    '363',
+    'Apartamento 312 Bloco C'
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Inserir as 4 bolsas de crochê baseadas nas imagens enviadas

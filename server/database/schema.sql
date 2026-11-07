@@ -1,7 +1,7 @@
 -- Extensão para UUID (caso queira manter UUID, ou SERIAL conforme sua preferência)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Tabela de Utilizadores / Usuários atualizada
+-- Tabela de Utilizadores / Usuários com endereço completo adicionado
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -10,10 +10,17 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(20) DEFAULT 'client', -- 'client', 'admin'
     image_url VARCHAR(255),
     phone VARCHAR(20),
+    cep VARCHAR(10),
+    city VARCHAR(100),
+    state VARCHAR(2),
+    neighborhood VARCHAR(100), -- Bairro
+    address VARCHAR(255),      -- Rua / Logradouro
+    number VARCHAR(20),        -- Número
+    complement VARCHAR(100),   -- Apto, Bloco, etc.
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de Produtos/Peças de Crochê com o campo category adicionado
+-- Tabela de Produtos/Peças de Crochê com a categoria
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
     title VARCHAR(150) NOT NULL,

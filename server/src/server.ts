@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 import productRoutes from './routes/productRoutes';
+import favoriteRoutes from './routes/favoriteRoutes';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // Rotas da API
 app.use('/products', productRoutes);
-
+app.use('/favorites', favoriteRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {

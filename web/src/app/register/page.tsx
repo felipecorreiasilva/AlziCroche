@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FaUser, FaEnvelope, FaLock, FaArrowRight } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Register() {
-  const router = useRouter();
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,23 +18,28 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem. Verifique e tente novamente.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Simulação de cadastro (substitua pela chamada real ao seu UserService ou API)
-      console.log("Cadastrando usuário:", { name, email, password });
-      
-      // Exemplo de redirecionamento após sucesso
-      alert("Conta criada com sucesso!");
-      router.push("/login");
-    } catch (err) {
+      await register({ name, email, password });
+    } catch (err: any) {
       console.error("Erro ao registrar:", err);
-      setError("Ocorreu um erro ao criar a conta. Tente novamente.");
+      setError(err.response?.data?.message || "Ocorreu um erro ao criar a conta. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -104,6 +110,21 @@ export default function Register() {
               placeholder="Mínimo de 6 caracteres"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Confirmar Senha */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+              <FaLock className="text-slate-400 text-xs" /> Confirmar Senha
+            </label>
+            <input
+              className="border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#0F172A] p-3 rounded-xl text-sm outline-none transition-all"
+              type="password"
+              placeholder="Digite a senha novamente"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>

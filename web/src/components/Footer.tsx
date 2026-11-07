@@ -26,7 +26,7 @@ export default function Footer() {
         {/* Banner de Garantia e Compra Segura */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-12 border-b border-slate-800">
           <div className="flex items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-            <FaShieldAlt className="text-3xl text-emerald-400 flex-shrink-0" />
+            <FaShieldAlt className="text-3xl text-emerald-400 shrink-0" />
             <div>
               <h4 className="font-semibold text-white text-sm">Compra 100% Segura</h4>
               <p className="text-xs text-slate-400">Seus dados totalmente protegidos</p>
@@ -34,7 +34,7 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-            <FaLock className="text-3xl text-emerald-400 flex-shrink-0" />
+            <FaLock className="text-3xl text-emerald-400 shrink-0" />
             <div>
               <h4 className="font-semibold text-white text-sm">Criptografia SSL</h4>
               <p className="text-xs text-slate-400">Ambiente seguro com certificado</p>
@@ -42,7 +42,7 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-            <FaTruck className="text-3xl text-emerald-400 flex-shrink-0" />
+            <FaTruck className="text-3xl text-emerald-400 shrink-0" />
             <div>
               <h4 className="font-semibold text-white text-sm">Entrega Garantida</h4>
               <p className="text-xs text-slate-400">Enviamos para todo o Brasil</p>

@@ -19,11 +19,11 @@ export default function Header() {
       {/* Menu Desktop */}
       <nav className="hidden md:block">
         <ul className="flex items-center gap-8">
-          <li><Link href="/" className="hover:text-pink-400 transition-colors">Início</Link></li>
-          <li><Link href="/products" className="hover:text-pink-400 transition-colors">Produtos</Link></li>
-          <li><Link href="/contact" className="hover:text-pink-400 transition-colors">Contato</Link></li>
+          <li><Link href="/" className="hover:text-emerald-400 transition-colors">Início</Link></li>
+          <li><Link href="/products" className="hover:text-emerald-400 transition-colors">Produtos</Link></li>
+          <li><Link href="/contact" className="hover:text-emerald-400 transition-colors">Contato</Link></li>
           <li>
-            <Link href="/cart" className="hover:text-pink-400 transition-colors">
+            <Link href="/cart" className="hover:text-emerald-400 transition-colors">
               <BsCart className="h-5 w-5" />
             </Link>
           </li>
@@ -45,7 +45,7 @@ export default function Header() {
 
       {/* Botão do Menu Mobile (Hambúrguer) */}
       <div className="flex items-center gap-4 md:hidden">
-        <Link href="/cart" className="hover:text-pink-400 transition-colors">
+        <Link href="/cart" className="hover:text-emerald-400 transition-colors">
           <BsCart className="h-6 w-6" />
         </Link>
         <button 
@@ -63,21 +63,21 @@ export default function Header() {
           <Link 
             href="/" 
             onClick={() => setIsOpen(false)}
-            className="text-lg font-medium hover:text-pink-400 transition"
+            className="text-lg font-medium hover:text-emerald-400 transition"
           >
             Início
           </Link>
           <Link 
             href="/products" 
             onClick={() => setIsOpen(false)}
-            className="text-lg font-medium hover:text-pink-400 transition"
+            className="text-lg font-medium hover:text-emerald-400 transition"
           >
             Produtos
           </Link>
           <Link 
             href="/contact" 
             onClick={() => setIsOpen(false)}
-            className="text-lg font-medium hover:text-pink-400 transition"
+            className="text-lg font-medium hover:text-emerald-400 transition"
           >
             Contato
           </Link>

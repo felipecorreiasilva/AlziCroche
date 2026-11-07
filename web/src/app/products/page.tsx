@@ -4,32 +4,42 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaSearch, FaShoppingBag, FaHeart, FaSpinner } from "react-icons/fa";
 import { ProductService, Product } from "@/service/productService";
+import { FavoriteService } from "@/service/favoriteService";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProductsPage() {
+    const { isAuthenticated } = useAuth() as any;
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
 
     useEffect(() => {
-        async function fetchProducts() {
+        async function fetchData() {
             try {
                 setIsLoading(true);
-                const data = await ProductService.getAllProducts();
-                setProducts(data);
-                setFilteredProducts(data);
+                const productsData = await ProductService.getAllProducts();
+                setProducts(productsData);
+                setFilteredProducts(productsData);
+
+                if (isAuthenticated) {
+                    const favoritesData = await FavoriteService.getFavorites();
+                    const ids = favoritesData.map((fav) => Number(fav.product_id)).filter(Boolean);
+                    setFavoriteIds(ids);
+                }
             } catch (err: any) {
-                console.error("Erro ao carregar produtos:", err);
+                console.error("Erro ao carregar dados:", err);
                 setError("Não foi possível carregar as peças. Tente novamente mais tarde.");
             } finally {
                 setIsLoading(false);
             }
         }
 
-        fetchProducts();
-    }, []);
+        fetchData();
+    }, [isAuthenticated]);
 
     useEffect(() => {
         let result = products;
@@ -47,6 +57,25 @@ export default function ProductsPage() {
 
         setFilteredProducts(result);
     }, [searchQuery, selectedCategory, products]);
+
+    const handleToggleFavorite = async (productId?: number) => {
+        if (!isAuthenticated || !productId) return;
+
+        try {
+            const isAlreadyFavorited = favoriteIds.includes(productId);
+            if (isAlreadyFavorited) {
+                setFavoriteIds(favoriteIds.filter((id) => id !== productId));
+            } else {
+                setFavoriteIds([...favoriteIds, productId]);
+            }
+
+            await FavoriteService.toggleFavorite(productId);
+        } catch (err) {
+            console.error("Erro ao atualizar favorito:", err);
+            const favoritesData = await FavoriteService.getFavorites();
+            setFavoriteIds(favoritesData.map((fav) => Number(fav.product_id)).filter(Boolean));
+        }
+    };
 
     const categories = ["all", ...Array.from(new Set(products.map((p) => p.category).filter(Boolean)))];
 
@@ -119,76 +148,87 @@ export default function ProductsPage() {
                                 <p className="text-slate-400 text-xs">Tente alterar o termo de busca ou o filtro de categoria.</p>
                             </div>
                         ) : (
-                            /* Grelha de Produtos com Cards delimitados por bordas nítidas */
+                            /* Grelha de Produtos */
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredProducts.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        className="group bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-amber-500/60 transition-all duration-300 flex flex-col"
-                                    >
-                                        {/* Contentor da Imagem */}
-                                        <div className="relative h-64 w-full bg-slate-100 overflow-hidden border-b border-slate-200">
-                                            {product.image_url ? (
-                                                <img
-                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${product.image_url}`}
-                                                    alt={product.name}
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs uppercase tracking-widest">
-                                                    Sem Imagem
-                                                </div>
-                                            )}
+                                {filteredProducts.map((product) => {
+                                    const isFavorited = product.id !== undefined && favoriteIds.includes(product.id);
 
-                                            {/* Tag de Categoria */}
-                                            {product.category && (
-                                                <span className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md border border-amber-500/20">
-                                                    {product.category}
-                                                </span>
-                                            )}
+                                    return (
+                                        <div
+                                            key={product.id}
+                                            className="group bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-amber-500/60 transition-all duration-300 flex flex-col"
+                                        >
+                                            {/* Contentor da Imagem */}
+                                            <div className="relative h-64 w-full bg-slate-100 overflow-hidden border-b border-slate-200">
+                                                {product.image_url ? (
+                                                    <img
+                                                        src={`${process.env.NEXT_PUBLIC_API_URL}${product.image_url}`}
+                                                        alt={product.name}
+                                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs uppercase tracking-widest">
+                                                        Sem Imagem
+                                                    </div>
+                                                )}
 
-                                            {/* Botão de Favorito */}
-                                            <button 
-                                                aria-label="Guardar nos favoritos"
-                                                className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-md text-slate-600 hover:text-red-500 rounded-full transition-colors shadow-sm"
-                                            >
-                                                <FaHeart className="text-xs" />
-                                            </button>
-                                        </div>
+                                                {/* Tag de Categoria */}
+                                                {product.category && (
+                                                    <span className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md border border-amber-500/20">
+                                                        {product.category}
+                                                    </span>
+                                                )}
 
-                                        {/* Detalhes do Produto */}
-                                        <div className="p-5 flex flex-col flex-grow justify-between gap-4">
-                                            <div>
-                                                <h3 className="font-semibold text-lg text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-1">
-                                                    {product.name}
-                                                </h3>
-                                                {product.description && (
-                                                    <p className="text-slate-500 text-xs mt-1.5 line-clamp-2 leading-relaxed">
-                                                        {product.description}
-                                                    </p>
+                                                {/* Botão de Favorito */}
+                                                {isAuthenticated && (
+                                                    <button 
+                                                        onClick={() => handleToggleFavorite(product.id)}
+                                                        aria-label="Guardar nos favoritos"
+                                                        className={`absolute top-3 right-3 p-2 backdrop-blur-md rounded-full transition-colors shadow-sm ${
+                                                            isFavorited 
+                                                                ? "bg-red-500 text-white" 
+                                                                : "bg-white/90 text-slate-600 hover:text-red-500"
+                                                        }`}
+                                                    >
+                                                        <FaHeart className="text-xs" />
+                                                    </button>
                                                 )}
                                             </div>
 
-                                            <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+                                            {/* Detalhes do Produto */}
+                                            <div className="p-5 flex flex-col grow justify-between gap-4">
                                                 <div>
-                                                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Preço</span>
-                                                    <span className="text-lg font-bold text-slate-900">
-                                                        R$ {Number(product.price).toFixed(2).replace('.', ',')}
-                                                    </span>
+                                                    <h3 className="font-semibold text-lg text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-1">
+                                                        {product.name}
+                                                    </h3>
+                                                    {product.description && (
+                                                        <p className="text-slate-500 text-xs mt-1.5 line-clamp-2 leading-relaxed">
+                                                            {product.description}
+                                                        </p>
+                                                    )}
                                                 </div>
 
-                                                <Link
-                                                    href={`/products/${product.id}`}
-                                                    className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
-                                                >
-                                                    <FaShoppingBag className="text-xs text-amber-400" /> Detalhes
-                                                </Link>
-                                            </div>
-                                        </div>
+                                                <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+                                                    <div>
+                                                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Preço</span>
+                                                        <span className="text-lg font-bold text-slate-900">
+                                                            R$ {Number(product.price).toFixed(2).replace('.', ',')}
+                                                        </span>
+                                                    </div>
 
-                                    </div>
-                                ))}
+                                                    <Link
+                                                        href={`/products/${product.id}`}
+                                                        className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+                                                    >
+                                                        <FaShoppingBag className="text-xs text-amber-400" /> Detalhes
+                                                    </Link>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </>

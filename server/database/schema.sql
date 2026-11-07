@@ -20,13 +20,14 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de Produtos/Peças de Crochê sem user_id
+-- Criação da tabela de Produtos (Cardápio)
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL, -- 'hamburgueres', 'acompanhamentos', 'bebidas'
     description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    category VARCHAR(50) NOT NULL, -- Ex: Tapetes, Amigurumis, Vestuário, Decoração
+    price DECIMAL(10,2) NOT NULL,
     image_url TEXT,
+    is_available BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

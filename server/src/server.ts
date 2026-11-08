@@ -8,6 +8,7 @@ import favoriteRoutes from './routes/favoriteRoutes';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import melhorEnvioRoutes from './routes/melhorEnvioRoutes';
+import orderRoutes from './routes/orderRoutes';
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ app.use('/favorites', favoriteRoutes);
 app.use('/auth', authRoutes);       // Rotas de autenticação (/auth/login, /auth/register)
 app.use('/users', userRoutes);     // Rotas de gestão de utilizadores (/users, /users/:id)
 app.use('/shipping', melhorEnvioRoutes);
-
+app.use('/', orderRoutes);
 // Rota de teste
 app.get('/', (req, res) => {
   res.json({ message: 'API AlziCrochê rodando com sucesso!' });

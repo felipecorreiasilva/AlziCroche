@@ -33,7 +33,7 @@ AlziCrochê/
 ├── server/       # API RESTful (Express.js + PostgreSQL)
 ├── web/          # Aplicação Web (Next.js App Router)
 ├── mobile/       # Aplicativo Mobile (Expo React Native)
-└── desktop/      # Aplicação Desktop (Electron.js)
+└── desktop/      # Aplicação Desktop (Electron.js)```
 
 ⚙️ Pré-requisitos
 

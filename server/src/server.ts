@@ -7,6 +7,7 @@ import productRoutes from './routes/productRoutes';
 import favoriteRoutes from './routes/favoriteRoutes';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
+import melhorEnvioRoutes from './routes/melhorEnvioRoutes';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/products', productRoutes);
 app.use('/favorites', favoriteRoutes);
 app.use('/auth', authRoutes);       // Rotas de autenticação (/auth/login, /auth/register)
 app.use('/users', userRoutes);     // Rotas de gestão de utilizadores (/users, /users/:id)
+app.use('/shipping', melhorEnvioRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {

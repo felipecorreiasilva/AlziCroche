@@ -9,7 +9,7 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import melhorEnvioRoutes from './routes/melhorEnvioRoutes';
 import orderRoutes from './routes/orderRoutes';
-
+import efiBankRoutes from './routes/efiBankRoutes'; // Importe o arquivo de rotas do efiBank
 dotenv.config();
 
 const app = express();
@@ -30,6 +30,7 @@ app.use('/auth', authRoutes);       // Rotas de autenticação (/auth/login, /au
 app.use('/users', userRoutes);     // Rotas de gestão de utilizadores (/users, /users/:id)
 app.use('/shipping', melhorEnvioRoutes);
 app.use('/', orderRoutes);
+app.use('/', efiBankRoutes); // Adicione a rota do efiBankRoutes
 // Rota de teste
 app.get('/', (req, res) => {
   res.json({ message: 'API AlziCrochê rodando com sucesso!' });

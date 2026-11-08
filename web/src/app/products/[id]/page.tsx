@@ -202,7 +202,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-3 text-slate-500 pt-20">
-                <FaSpinner className="animate-spin text-3xl text-amber-500" />
+                <FaSpinner className="animate-spin text-3xl text-emerald-500" />
                 <p className="text-sm">A carregar detalhes da peça...</p>
             </div>
         }>

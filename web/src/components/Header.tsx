@@ -5,11 +5,14 @@ import Link from "next/link";
 import { BsCart } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { HiMenu, HiX } from "react-icons/hi";
-import { useCart } from "@/context/CartContext"; // Importa o hook do carrinho
+import { FiLogOut } from "react-icons/fi";
+import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const { totalItems, setIsCartOpen } = useCart(); // Obtém a quantidade e a função para abrir o modal
+  const { totalItems, setIsCartOpen } = useCart();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   return (
     <header className="z-50 fixed w-full flex justify-between items-center py-4 px-6 md:px-16 bg-[#0F172A] text-white border-b border-slate-800">
@@ -32,40 +35,77 @@ export default function Header() {
               title="Abrir carrinho"
             >
               <BsCart className="h-5 w-5" />
-              {/* Badge com a quantidade de itens */}
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 font-bold text-[10px] h-4 w-4 rounded-full flex items-center justify-center shadow-md">
+                <span className="absolute -top-2 -right-2.5 bg-emerald-400 text-slate-950 font-bold text-[10px] h-4 w-4 rounded-full flex items-center justify-center shadow-md">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}
             </button>
           </li>
           <li>
-            <div className="flex items-center gap-x-2">
-              <CgProfile className="h-6 w-6 text-slate-300" />
-              <div className="flex flex-col text-[11px] leading-tight">
-                <span className="text-slate-400">Bem-vindo(a)</span>
-                <div>
-                  <Link href="/login" className="font-semibold hover:underline">Entrar</Link>
-                  <span className="mx-1 text-slate-400">|</span>
-                  <Link href="/register" className="font-semibold hover:underline">Criar Conta</Link>
+            {isLoading ? (
+              /* Estado de carregamento inicial (evita o piscar) */
+              <div className="h-8 w-28 bg-slate-800/80 animate-pulse rounded-lg" />
+            ) : isAuthenticated && user ? (
+              /* Se estiver autenticado: Mostra a foto/avatar linkada ao perfil e opção de Sair */
+              <div className="flex items-center gap-3">
+                <Link 
+                  href="/profile" 
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  title="Ver perfil"
+                >
+                  {user.image_url ? (
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API_URL}${user.image_url}`}
+                      alt={user.name}
+                      className="h-9 w-9 rounded-full object-cover border border-slate-700 shadow-inner"
+                    />
+                  ) : (
+                    <CgProfile className="h-8 w-8 text-slate-300" />
+                  )}
+                  <div className="flex flex-col text-[11px] leading-tight">
+                    <span className="text-slate-400">Olá,</span>
+                    <span className="font-semibold text-slate-100 max-w-30 truncate" title={user.name}>
+                      {user.name.split(' ')[0]}
+                    </span>
+                  </div>
+                </Link>
+
+                <button
+                  onClick={logout}
+                  className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300 bg-slate-900/80 border border-slate-800 hover:border-rose-900/50 py-1.5 px-3 rounded-lg transition-colors cursor-pointer ml-2"
+                  title="Terminar sessão"
+                >
+                  <FiLogOut className="h-3.5 w-3.5" />
+                  <span>Sair</span>
+                </button>
+              </div>
+            ) : (
+              /* Se NÃO estiver autenticado: Mostra Entrar e Criar Conta */
+              <div className="flex items-center gap-x-2">
+                <CgProfile className="h-6 w-6 text-slate-300" />
+                <div className="flex flex-col text-[11px] leading-tight">
+                  <span className="text-slate-400">Bem-vindo(a)</span>
+                  <div>
+                    <Link href="/login" className="font-semibold hover:underline">Entrar</Link>
+                    <span className="mx-1 text-slate-400">|</span>
+                    <Link href="/register" className="font-semibold hover:underline">Criar Conta</Link>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </li>
         </ul>
       </nav>
 
       {/* Botão do Menu Mobile (Hambúrguer) */}
       <div className="flex items-center gap-4 md:hidden">
-        {/* Botão para abrir o CartModal no Mobile */}
         <button
           onClick={() => setIsCartOpen(true)}
           className="relative hover:text-emerald-400 transition-colors flex items-center cursor-pointer"
           title="Abrir carrinho"
         >
           <BsCart className="h-6 w-6" />
-          {/* Badge com a quantidade de itens no mobile */}
           {totalItems > 0 && (
             <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 font-bold text-[10px] h-4 w-4 rounded-full flex items-center justify-center shadow-md">
               {totalItems > 99 ? '99+' : totalItems}
@@ -109,17 +149,54 @@ export default function Header() {
           <hr className="border-slate-800 my-2" />
 
           {/* Perfil no Mobile */}
-          <div className="flex items-center gap-3 pt-2">
-            <CgProfile className="h-8 w-8 text-slate-300" />
-            <div className="flex flex-col text-xs">
-              <span className="text-slate-400">Bem-vindo(a)</span>
-              <div>
-                <Link href="/login" onClick={() => setIsOpen(false)} className="font-semibold hover:underline">Entrar</Link>
-                <span className="mx-1 text-slate-400">|</span>
-                <Link href="/register" onClick={() => setIsOpen(false)} className="font-semibold hover:underline">Criar Conta</Link>
+          {isLoading ? (
+            <div className="h-10 w-full bg-slate-800/80 animate-pulse rounded-xl" />
+          ) : isAuthenticated && user ? (
+            <div className="flex flex-col gap-4 pt-2">
+              <Link 
+                href="/profile" 
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              >
+                {user.image_url ? (
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${user.image_url}`}
+                    alt={user.name}
+                    className="h-10 w-10 rounded-full object-cover border border-slate-700"
+                  />
+                ) : (
+                  <CgProfile className="h-8 w-8 text-slate-300" />
+                )}
+                <div className="flex flex-col text-xs leading-tight">
+                  <span className="text-slate-400">Conectado como</span>
+                  <span className="font-semibold text-slate-100">{user.name}</span>
+                </div>
+              </Link>
+
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-900/50 text-rose-400 hover:bg-rose-500/20 py-2.5 rounded-xl text-sm font-medium transition"
+              >
+                <FiLogOut className="h-4 w-4" />
+                <span>Terminar Sessão</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 pt-2">
+              <CgProfile className="h-8 w-8 text-slate-300" />
+              <div className="flex flex-col text-xs">
+                <span className="text-slate-400">Bem-vindo(a)</span>
+                <div>
+                  <Link href="/login" onClick={() => setIsOpen(false)} className="font-semibold hover:underline">Entrar</Link>
+                  <span className="mx-1 text-slate-400">|</span>
+                  <Link href="/register" onClick={() => setIsOpen(false)} className="font-semibold hover:underline">Criar Conta</Link>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </header>

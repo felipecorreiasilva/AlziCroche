@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   role: 'client' | 'admin';
+  cpf?: string | null;
   image_url?: string | null;
   phone?: string | null;
   cep?: string | null;
@@ -19,6 +20,7 @@ export interface RegisterDTO {
   name: string;
   email: string;
   password: string;
+  cpf?: string;
   phone?: string;
   cep?: string;
   city?: string;

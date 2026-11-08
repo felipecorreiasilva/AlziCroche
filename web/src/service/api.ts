@@ -1,18 +1,16 @@
 import axios from 'axios';
+import { tokenService } from './tokenService'; // Importa o seu tokenService
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
-// 1. Interceptor de Requisição: Injeta automaticamente o token JWT se ele existir
+// 1. Interceptor de Requisição: Injeta automaticamente o token JWT usando o tokenService
 api.interceptors.request.use(
     (config) => {
-        // Verifica se estamos no browser antes de aceder ao localStorage
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('@ByteFome:token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
+        const token = tokenService.getToken(); // Usa a chave correta (@AlziCrochê:token)
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
@@ -26,12 +24,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // VERIFICAÇÃO: Se o erro 401 NÃO veio da rota de login, aí sim redirecionamos
             const isLoginRoute = error.config?.url?.includes('/auth/login');
 
             if (!isLoginRoute && typeof window !== 'undefined') {
-                localStorage.removeItem('@ByteFome:token');
-                window.location.href = '/';
+                tokenService.removeToken(); // Remove usando o serviço correto
+                // window.location.href = '/login';
             }
         }
         return Promise.reject(error);

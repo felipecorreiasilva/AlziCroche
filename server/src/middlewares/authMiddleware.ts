@@ -7,7 +7,7 @@ export interface AuthenticatedRequest extends Request {
     user?: {
         id: number;
         email: string;
-        role: 'client' | 'admin' | 'delivery';
+        role: 'client' | 'admin';
     };
 }
 
@@ -40,7 +40,7 @@ export function verifyAuth(req: AuthenticatedRequest, res: Response, next: NextF
         const payload = decoded as JwtPayload & {
             id: number;
             email: string;
-            role: 'client' | 'admin' | 'delivery';
+            role: 'client' | 'admin';
         };
 
         req.user = {

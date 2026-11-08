@@ -1,31 +1,37 @@
--- Tabela de Utilizadores / Usuários com endereço completo adicionado
+-- Tabela de Utilizadores / Usuários com CPF e endereço completo adicionados
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) DEFAULT 'client', -- 'client', 'admin'
+    cpf VARCHAR(14) UNIQUE,          -- CPF do utilizador (com ou sem formatação)
     image_url VARCHAR(255),
     phone VARCHAR(20),
     cep VARCHAR(10),
     city VARCHAR(100),
     state VARCHAR(2),
-    neighborhood VARCHAR(100), -- Bairro
-    address VARCHAR(255),      -- Rua / Logradouro
-    number VARCHAR(20),        -- Número
-    complement VARCHAR(100),   -- Apto, Bloco, etc.
+    neighborhood VARCHAR(100),        -- Bairro
+    address VARCHAR(255),             -- Rua / Logradouro
+    number VARCHAR(20),               -- Número
+    complement VARCHAR(100),          -- Apto, Bloco, etc.
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Criação da tabela de Produtos (Cardápio)
+-- Criação da tabela de Produtos com dimensões e peso obrigatórios (NOT NULL) para a API do Melhor Envio
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    category VARCHAR(50) NOT NULL, -- 'hamburgueres', 'acompanhamentos', 'bebidas'
+    category VARCHAR(50) NOT NULL,    -- Categoria do produto
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     image_url TEXT,
     is_available BOOLEAN DEFAULT TRUE,
+    -- Campos de logística / dimensões obrigatórios para o Melhor Envio
+    weight DECIMAL(10,3) NOT NULL DEFAULT 0.300, -- Peso em kg (ex: 300g = 0.3)
+    width DECIMAL(10,2) NOT NULL DEFAULT 15.00,  -- Largura em cm
+    height DECIMAL(10,2) NOT NULL DEFAULT 10.00, -- Altura em cm
+    length DECIMAL(10,2) NOT NULL DEFAULT 20.00, -- Comprimento em cm
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

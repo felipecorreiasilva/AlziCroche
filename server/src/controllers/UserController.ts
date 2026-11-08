@@ -20,7 +20,7 @@ export class UserController {
     static async getUserById(req: Request, res: Response) {
         try {
             const id = Number(req.params.id);
-            const user = await UserModel.getById(id); // Compatível com getById do seu Model
+            const user = await UserModel.getById(id);
 
             if (!user) {
                 return res.status(404).json({ error: 'Utilizador não encontrado.' });
@@ -38,7 +38,7 @@ export class UserController {
         try {
             const id = Number(req.params.id);
             const { 
-                name, email, role, phone, 
+                name, email, role, phone, cpf, 
                 cep, city, state, neighborhood, address, number, complement 
             } = req.body;
 
@@ -73,10 +73,8 @@ export class UserController {
             let image_url = existingUser.image_url; // Mantém a imagem anterior por defeito
             
             if (req.file) {
-                // Se um novo ficheiro foi enviado pelo Multer, definimos o novo caminho relativo
                 image_url = `/uploads/users/${req.file.filename}`;
 
-                // Se o utilizador já tinha uma imagem anterior gravada, removemos o ficheiro antigo do disco
                 if (existingUser.image_url) {
                     try {
                         const oldFilePath = path.join(process.cwd(), existingUser.image_url);
@@ -93,6 +91,7 @@ export class UserController {
                 name, 
                 email, 
                 phone, 
+                cpf, 
                 image_url,
                 cep,
                 city,
@@ -104,7 +103,7 @@ export class UserController {
             };
             
             if (isAdmin && role !== undefined) {
-                dataToUpdate.role = role; // Apenas admin pode persistir a alteração de role
+                dataToUpdate.role = role;
             }
 
             const updatedUser = await UserModel.update(id, dataToUpdate);
@@ -121,21 +120,18 @@ export class UserController {
         try {
             const id = Number(req.params.id);
 
-            // 1. Buscar o utilizador antes de o apagar para obter o caminho da imagem de perfil (image_url)
             const user = await UserModel.getById(id);
 
             if (!user) {
                 return res.status(404).json({ error: 'Utilizador não encontrado.' });
             }
 
-            // 2. Executar a exclusão na base de dados
             const deleted = await UserModel.delete(id);
 
             if (!deleted) {
                 return res.status(404).json({ error: 'Utilizador não encontrado para exclusão.' });
             }
 
-            // 3. Se o utilizador tinha uma imagem de perfil associada, remove o ficheiro físico do servidor
             if (user.image_url) {
                 try {
                     const filePath = path.join(process.cwd(), user.image_url);

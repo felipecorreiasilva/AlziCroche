@@ -32,7 +32,7 @@ export function CartModal() {
                 {/* Cabeçalho */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-[#0F172A] text-white">
                     <div className="flex items-center gap-2.5">
-                        <FaShoppingBag className="h-5 w-5 text-amber-400" />
+                        <FaShoppingBag className="h-5 w-5 text-emerald-400" />
                         <h2 className="text-lg font-bold tracking-tight">O seu Carrinho</h2>
                     </div>
 

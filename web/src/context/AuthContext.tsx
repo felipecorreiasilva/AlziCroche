@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const decoded = jwtDecode<JwtPayload>(token);
             const userId = decoded.id || decoded.sub;
             if (userId) {
+                // Se o seu interceptor do axios já estiver a injetar o token, isto funcionará perfeitamente ao recarregar a página
                 const fullUser = await userService.getUserById(userId);
                 setUser(fullUser);
             }
@@ -66,9 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (credentials: LoginDTO) => {
         setIsLoading(true);
         try {
-            const token = await AuthService.login(credentials);
-            tokenService.setToken(token);
-            await fetchAndSetUser(token);
+            // O AuthService já chama o tokenService.setToken internamente
+            await AuthService.login(credentials);
+            
+            // Como o token acabou de ser guardado, podemos buscar os dados do utilizador logo em seguida
+            const token = tokenService.getToken();
+            if (token) {
+                await fetchAndSetUser(token);
+            }
+
             router.push('/');
         } finally {
             setIsLoading(false);
@@ -78,9 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = async (data: RegisterDTO) => {
         setIsLoading(true);
         try {
-            const token = await AuthService.register(data);
-            tokenService.setToken(token);
-            await fetchAndSetUser(token);
+            await AuthService.register(data);
+            const token = tokenService.getToken();
+            if (token) {
+                await fetchAndSetUser(token);
+            }
             router.push('/');
         } finally {
             setIsLoading(false);

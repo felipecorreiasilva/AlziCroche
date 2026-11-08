@@ -6,6 +6,7 @@ export interface User {
     email: string;
     password_hash?: string; // Opcional para não expor a senha no front-end após o login
     role?: 'client' | 'admin';
+    cpf?: string | null;
     image_url?: string | null;
     phone?: string | null;
     cep?: string | null;
@@ -25,28 +26,28 @@ export type NewUser = Omit<User, 'id' | 'created_at' | 'password_hash'> & {
 export type UserUpdate = Partial<Omit<User, 'id' | 'created_at'>>;
 
 const publicUserFields = `
-    id, name, email, role, image_url, phone, cep, city, state,
+    id, name, email, role, cpf, image_url, phone, cep, city, state,
     neighborhood, address, number, complement, created_at
 `;
 
 export const UserModel = {
     async create(user: NewUser): Promise<User> {
         const {
-            name, email, password_hash, role = 'client', image_url = null,
+            name, email, password_hash, role = 'client', cpf = null, image_url = null,
             phone = null, cep = null, city = null, state = null,
             neighborhood = null, address = null, number = null, complement = null,
         } = user;
 
         const query = `
             INSERT INTO users (
-                name, email, password_hash, role, image_url, phone, cep, city,
+                name, email, password_hash, role, cpf, image_url, phone, cep, city,
                 state, neighborhood, address, number, complement
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING ${publicUserFields};
         `;
         const values = [
-            name, email, password_hash, role, image_url, phone, cep, city,
+            name, email, password_hash, role, cpf, image_url, phone, cep, city,
             state, neighborhood, address, number, complement,
         ];
         const result = await pool.query(query, values);
@@ -70,7 +71,7 @@ export const UserModel = {
 
     async update(id: number, user: UserUpdate): Promise<User | null> {
         const allowedFields = new Set([
-            'name', 'email', 'password_hash', 'role', 'image_url', 'phone', 'cep',
+            'name', 'email', 'password_hash', 'role', 'cpf', 'image_url', 'phone', 'cep',
             'city', 'state', 'neighborhood', 'address', 'number', 'complement',
         ]);
         const entries = Object.entries(user).filter(
@@ -102,4 +103,3 @@ export const UserModel = {
         return (result.rowCount ?? 0) > 0;
     },
 };
-

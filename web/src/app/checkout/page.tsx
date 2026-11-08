@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { FaShoppingBag, FaSpinner, FaCheckCircle } from "react-icons/fa";
+import api from "@/service/api";
 
 // Importação dos componentes modulares do checkout
 import ContactStep from "@/components/checkout/ContactStep";
@@ -17,7 +18,7 @@ export default function CheckoutPage() {
     const { user, isLoading: authLoading } = useAuth();
     const { cart, totalPrice } = useCart() as any;
 
-    // Etapas: 1 = Contato, 2 = Endereço, 3 = Frete, 4 = Pagamento, 5 = Sucesso
+    // Etapas: 1 = Contato, 2 = Endereço, 3 = Frete, 4 = Pagamento, 5 = Sucesso/Pix
     const [step, setStep] = useState(1);
     const [error, setError] = useState("");
 
@@ -60,6 +61,32 @@ export default function CheckoutPage() {
             }));
         }
     }, [user]);
+
+    // Polling automático na Etapa 5 caso seja Pix para detectar quando o webhook confirmar o pagamento
+    useEffect(() => {
+        let interval: any;
+        
+        if (step === 5 && completedOrderData?.method === 'pix' && completedOrderData?.orderId) {
+            interval = setInterval(async () => {
+                try {
+                    const response = await api.get(`/orders/${completedOrderData.orderId}`);
+                    const orderStatus = response.data?.status;
+                    
+                    if (orderStatus === 'paid' || orderStatus === 'approved') {
+                        clearInterval(interval);
+                        alert("Pagamento confirmado com sucesso!");
+                        router.push('/');
+                    }
+                } catch (err) {
+                    // Silencia erros de requisição durante o polling periódico
+                }
+            }, 4000);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [step, completedOrderData, router]);
 
     if (authLoading) {
         return (
@@ -274,21 +301,70 @@ export default function CheckoutPage() {
                     </div>
                 )}
 
-                {/* ETAPA 5: Sucesso */}
+                {/* ETAPA 5: Sucesso / Exibição do Pix */}
                 {step === 5 && (
-                    <div className="text-center bg-slate-50 border border-slate-300 p-10 rounded-2xl shadow-md max-w-xl mx-auto flex flex-col items-center gap-4">
-                        <FaCheckCircle className="text-5xl text-emerald-600 animate-bounce" />
-                        <h2 className="text-2xl font-bold text-slate-900">Pedido Realizado com Sucesso!</h2>
+                    <div className="text-center bg-slate-50 border border-slate-300 p-8 rounded-2xl shadow-md max-w-xl mx-auto flex flex-col items-center gap-4">
+                        <FaCheckCircle className="text-4xl text-emerald-600" />
+                        <h2 className="text-2xl font-bold text-slate-900">
+                            {completedOrderData?.method === 'pix' ? 'Quase lá! Pague com Pix' : 'Pedido Realizado com Sucesso!'}
+                        </h2>
+                        
                         <p className="text-slate-600 text-sm">
-                            Obrigado por comprar na <span className="font-semibold text-slate-900">AlziCrochê</span>. Enviamos os detalhes e a confirmação para o seu e-mail (<span className="text-slate-900 font-medium">{formData.email}</span>).
+                            {completedOrderData?.method === 'pix' 
+                                ? 'Escaneie o QR Code abaixo com o aplicativo do seu banco ou utilize o Pix Copia e Cola para concluir o pagamento.'
+                                : <>Obrigado por comprar na <span className="font-semibold text-slate-900">AlziCrochê</span>. Enviamos os detalhes para o seu e-mail (<span className="text-slate-900 font-medium">{formData.email}</span>).</>
+                            }
                         </p>
-                        {completedOrderData?.id && (
+
+                        {/* SE FOR PIX: Exibe o QR Code e o Copia e Cola */}
+                        {completedOrderData?.method === 'pix' && completedOrderData?.pix && (
+                            <div className="flex flex-col items-center gap-4 w-full bg-white p-6 rounded-xl border border-slate-200 my-2">
+                                {completedOrderData.pix.qrcode && (
+                                    <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                                        <img 
+                                            src={completedOrderData.pix.qrcode.startsWith('data:image') ? completedOrderData.pix.qrcode : `data:image/png;base64,${completedOrderData.pix.qrcode}`} 
+                                            alt="QR Code Pix" 
+                                            className="w-48 h-48 object-contain mx-auto"
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="w-full flex flex-col gap-2">
+                                    <label className="text-xs font-semibold text-slate-700 text-left">Pix Copia e Cola:</label>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            readOnly 
+                                            value={completedOrderData.pix.copiaECola} 
+                                            className="w-full bg-slate-100 border border-slate-300 rounded-lg p-2 text-xs text-slate-600 select-all font-mono"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(completedOrderData.pix.copiaECola);
+                                                alert("Código Pix copiado com sucesso!");
+                                            }}
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition cursor-pointer shrink-0"
+                                        >
+                                            Copiar
+                                        </button>
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200 w-full">
+                                    Assim que o pagamento for confirmado pelo banco, o seu pedido será processado automaticamente.
+                                </p>
+                            </div>
+                        )}
+
+                        {completedOrderData?.orderId && (
                             <p className="text-xs text-slate-500 bg-slate-200/60 py-1 px-3 rounded-lg">
-                                Código do Pedido: <span className="font-mono font-bold text-slate-700">#{completedOrderData.id}</span>
+                                Código do Pedido: <span className="font-mono font-bold text-slate-700">#{completedOrderData.orderId}</span>
                             </p>
                         )}
-                        <div className="pt-4 w-full">
+
+                        <div className="pt-2 w-full">
                             <button
+                                type="button"
                                 onClick={() => router.push('/')}
                                 className="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-medium py-3 rounded-xl transition text-sm cursor-pointer"
                             >

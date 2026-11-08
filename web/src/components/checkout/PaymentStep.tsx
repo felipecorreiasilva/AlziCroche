@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { FaCreditCard, FaQrcode, FaArrowLeft, FaCheckCircle, FaSpinner, FaLock } from "react-icons/fa";
 import { CheckoutFormData } from "@/types/checkout";
 import { useCart } from "@/context/CartContext";
-import api from "@/service/api";
+import { EfiBankService } from "@/service/efiBankService";
 
 interface PaymentStepProps {
     formData: CheckoutFormData;
@@ -71,35 +71,43 @@ export default function PaymentStep({
                     cep: formData.cep,
                     address: formData.address,
                     number: formData.number,
-                    complement: formData.complement,
+                    complement: formData.complement || "",
                     neighborhood: formData.neighborhood,
                     city: formData.city,
                     state: formData.state,
                 },
                 shipping: {
-                    method: shippingMethod,
-                    price: shippingPrice,
+                    service: shippingMethod || "PAC",
+                    cost: shippingPrice,
                 },
                 payment: {
-                    method: paymentMethod,
-                    card_details: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? cardData : null
+                    method: paymentMethod as 'pix' | 'credit_card' | 'debit_card', // <-- Correção do tipo aqui
+                    card_details: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? {
+                        number: cardData.number,
+                        name: cardData.name,
+                        expiry: cardData.expiry,
+                        cvv: cardData.cvv
+                    } : undefined
                 },
                 items: cart.map((item: any) => ({
                     product_id: item.product.id,
+                    name: item.product.name,
                     quantity: item.quantity,
                     price: item.product.price,
                 })),
+                subtotal: subtotal,
                 total: totalOrder,
             };
 
-            const response = await api.post("/orders", orderPayload);
+            // Envia para a rota unificada do backend (/efi/pay) que processa e grava na tabela orders
+            const response = await EfiBankService.processPayment(orderPayload);
 
             clearCart();
-            onSuccessOrder(response.data);
+            onSuccessOrder(response);
 
         } catch (err: any) {
-            console.error("Erro ao finalizar pedido:", err);
-            setError(err.response?.data?.error || "Ocorreu um erro ao processar o seu pedido. Tente novamente.");
+            console.error("Erro ao processar pagamento:", err);
+            setError(err.error || err.response?.data?.error || "Ocorreu um erro ao processar o seu pagamento. Tente novamente.");
         } finally {
             setIsLoading(false);
         }
@@ -282,7 +290,7 @@ export default function PaymentStep({
                 >
                     {isLoading ? (
                         <>
-                            <FaSpinner className="animate-spin text-xs" /> Processando Pedido...
+                            <FaSpinner className="animate-spin text-xs" /> Processando Pagamento...
                         </>
                     ) : (
                         <>

@@ -26,15 +26,6 @@ O **AlziCrochê** é um ecossistema completo de e-commerce voltado para a comerc
 
 ---
 
-## 📁 Estrutura do Projeto
-
-```text
-AlziCrochê/
-├── server/       # API RESTful (Express.js + PostgreSQL)
-├── web/          # Aplicação Web (Next.js App Router)
-├── mobile/       # Aplicativo Mobile (Expo React Native)
-└── desktop/      # Aplicação Desktop (Electron.js)```
-
 ⚙️ Pré-requisitos
 
 - Node.js (versão 18+ recomendada)
@@ -50,3 +41,12 @@ AlziCrochê/
 
 👨‍💻 Autor
 Desenvolvido com dedicação por Felipe Correia Silva.
+
+## 📁 Estrutura do Projeto
+
+```text
+AlziCrochê/
+├── server/       # API RESTful (Express.js + PostgreSQL)
+├── web/          # Aplicação Web (Next.js App Router)
+├── mobile/       # Aplicativo Mobile (Expo React Native)
+└── desktop/      # Aplicação Desktop (Electron.js)

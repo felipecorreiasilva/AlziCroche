@@ -5,6 +5,8 @@ import path from 'path';
 
 import productRoutes from './routes/productRoutes';
 import favoriteRoutes from './routes/favoriteRoutes';
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -15,13 +17,15 @@ const PORT = process.env.PORT || 3333;
 app.use(cors());
 app.use(express.json());
 
-// Configurar rota estática para servir as imagens da pasta uploads/products
-// Exemplo de acesso: http://localhost:3333/uploads/products/nome-da-imagem.jpg
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
+// Configurar rota estática para servir as imagens da pasta uploads
+// Exemplo de acesso: http://localhost:3333/uploads/products/... ou /uploads/users/...
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Rotas da API
 app.use('/products', productRoutes);
 app.use('/favorites', favoriteRoutes);
+app.use('/auth', authRoutes);       // Rotas de autenticação (/auth/login, /auth/register)
+app.use('/users', userRoutes);     // Rotas de gestão de utilizadores (/users, /users/:id)
 
 // Rota de teste
 app.get('/', (req, res) => {

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { FavoriteController } from '../controllers/favoriteController';
+import { FavoriteController } from '../controllers/FavoriteController';
 import { verifyAuth } from '../middlewares/authMiddleware'; // Ajuste o caminho do seu middleware de autenticação
 
 const router = Router();

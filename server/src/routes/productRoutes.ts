@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ProductController } from '../controllers/productController';
+import { ProductController } from '../controllers/ProductController';
 import { uploadProduct } from '../middlewares/uploadProductMiddleware';
 import { verifyAuth } from '../middlewares/authMiddleware';
 import { verifyAdmin } from '../middlewares/adminMiddleware';

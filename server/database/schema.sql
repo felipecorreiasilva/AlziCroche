@@ -1,6 +1,3 @@
--- Extensão para UUID (caso queira manter UUID, ou SERIAL conforme sua preferência)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Tabela de Utilizadores / Usuários com endereço completo adicionado
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,

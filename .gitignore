@@ -8,6 +8,9 @@ jspm_packages/
 .env.*.local
 !.env.example
 
+# Certificados de Segurança (Efí Bank mTLS)
+certs/
+
 # Builds e Compilações (Node, TypeScript, Next.js, Electron, Expo)
 dist/
 build/

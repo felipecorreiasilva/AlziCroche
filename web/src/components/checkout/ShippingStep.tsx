@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { FaTruck, FaArrowRight, FaArrowLeft, FaSpinner } from "react-icons/fa";
+import { FaTruck, FaArrowRight, FaArrowLeft, FaSpinner, FaBox } from "react-icons/fa";
 import { CheckoutFormData } from "@/types/checkout";
 import { useCart } from "@/context/CartContext";
-import api from "@/service/api"; // O seu axios configurado com o token
+import api from "@/service/api";
 
 interface ShippingOption {
     id: number;
@@ -25,7 +25,7 @@ interface ShippingStepProps {
     onNext: () => void;
     onBack: () => void;
     formData: CheckoutFormData;
-    onSelectShippingPrice: (price: number) => void; // Para atualizar o valor total no componente pai
+    onSelectShippingPrice: (price: number) => void;
 }
 
 export default function ShippingStep({ 
@@ -41,14 +41,12 @@ export default function ShippingStep({
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
 
-    // Buscar cotação no Melhor Envio assim que o componente for montado
     useEffect(() => {
         const fetchShippingOptions = async () => {
             setIsLoading(true);
             setError("");
 
             try {
-                // Limpa o CEP para enviar apenas números
                 const cleanCep = formData.cep ? formData.cep.replace(/\D/g, "") : "";
 
                 if (!cleanCep || cleanCep.length !== 8) {
@@ -57,24 +55,23 @@ export default function ShippingStep({
                     return;
                 }
 
-                // Chamada para a sua API backend que consome o Melhor Envio
+                // Ajustado para 'postal_code_destination' conforme esperado pelo backend
                 const response = await api.post("/shipping/calculate", {
-                    postal_code: cleanCep,
+                    postal_code_destination: cleanCep,
                     products: cart.map((item: any) => ({
                         id: item.product.id,
                         quantity: item.quantity,
                         price: item.product.price,
-                        // Se tiver peso/dimensões cadastradas no produto, envie aqui também:
                         weight: item.product.weight || 0.3,
                         width: item.product.width || 15,
                         height: item.product.height || 10,
                         length: item.product.length || 20,
+                        insurance_value: Number(item.product.price) || 0,
                     }))
                 });
 
                 setShippingOptions(response.data);
 
-                // Se houver opções e nenhuma estiver selecionada, seleciona a primeira por padrão
                 if (response.data && response.data.length > 0 && !shippingMethod) {
                     const firstOption = response.data[0];
                     setShippingMethod(firstOption.name);
@@ -100,7 +97,7 @@ export default function ShippingStep({
     return (
         <div className="bg-slate-50 border border-slate-300 p-6 md:p-8 rounded-2xl shadow-md flex flex-col gap-6">
             <h2 className="text-lg font-bold text-slate-900 border-b border-slate-300 pb-3 flex items-center gap-2">
-                <FaTruck className="text-emerald-600" /> Opções de Envio (Melhor Envio)
+                <FaTruck className="text-emerald-600" /> Escolha a Opção de Envio
             </h2>
 
             {error && (
@@ -112,43 +109,65 @@ export default function ShippingStep({
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-3">
                     <FaSpinner className="animate-spin text-3xl text-emerald-600" />
-                    <p className="text-xs text-slate-600">Calculando o melhor frete para o seu endereço...</p>
+                    <p className="text-xs text-slate-600">Calculando as opções de frete disponíveis...</p>
                 </div>
             ) : shippingOptions.length > 0 ? (
-                <div className="flex flex-col gap-4">
+                /* Grid de Cards para escolha de Envio (PAC / SEDEX) */
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {shippingOptions.map((option) => {
                         const price = Number(option.custom_price || option.price);
                         const isSelected = shippingMethod === option.name;
 
                         return (
-                            <label 
-                                key={option.id} 
-                                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                                    isSelected ? 'border-emerald-600 bg-emerald-50/50 shadow-sm' : 'border-slate-300 bg-white hover:border-slate-400'
+                            <div 
+                                key={option.id}
+                                onClick={() => handleSelectOption(option)}
+                                className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between gap-4 bg-white ${
+                                    isSelected 
+                                        ? 'border-emerald-600 ring-2 ring-emerald-600/20 shadow-md bg-emerald-50/20' 
+                                        : 'border-slate-200 hover:border-slate-300 shadow-sm'
                                 }`}
                             >
-                                <div className="flex items-center gap-3">
+                                {/* Cabeçalho do Card com Logo / Nome e Radio visual */}
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 p-1">
+                                            {option.company?.picture ? (
+                                                <img src={option.company.picture} alt={option.company.name} className="h-full object-contain" />
+                                            ) : (
+                                                <FaBox className="text-slate-500" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">{option.company?.name || 'Correios'}</span>
+                                            <h3 className="font-bold text-slate-900 text-base">{option.name}</h3>
+                                        </div>
+                                    </div>
                                     <input 
                                         type="radio" 
                                         name="shipping" 
                                         checked={isSelected} 
                                         onChange={() => handleSelectOption(option)} 
-                                        className="text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                                        className="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-1 cursor-pointer"
                                     />
+                                </div>
+
+                                {/* Corpo do Card com Prazo e Preço */}
+                                <div className="flex items-end justify-between border-t border-slate-100 pt-4 mt-2">
                                     <div>
-                                        <div className="flex items-center gap-2">
-                                            {option.company?.picture && (
-                                                <img src={option.company.picture} alt={option.company.name} className="h-5 object-contain" />
-                                            )}
-                                            <p className="font-semibold text-slate-900 text-sm">{option.name}</p>
-                                        </div>
-                                        <p className="text-xs text-slate-500">Entrega estimada em até {option.delivery_time} dias úteis</p>
+                                        <span className="text-xs text-slate-500 block">Prazo estimado</span>
+                                        <span className="font-semibold text-slate-800 text-sm">
+                                            Até {option.delivery_time} {option.delivery_time === 1 ? 'dia útil' : 'dias úteis'}
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-xs text-slate-500 block">Valor</span>
+                                        <span className="font-extrabold text-emerald-700 text-lg">
+                                            R$ {price.toFixed(2).replace('.', ',')}
+                                        </span>
                                     </div>
                                 </div>
-                                <span className="font-bold text-slate-900 text-sm">
-                                    R$ {price.toFixed(2).replace('.', ',')}
-                                </span>
-                            </label>
+                            </div>
                         );
                     })}
                 </div>

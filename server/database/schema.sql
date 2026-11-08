@@ -48,3 +48,45 @@ CREATE TABLE favorites (
     CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_favorite_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
+
+-- Tabela de Pedidos (AlziCrochê)
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,     -- Relaciona com a tabela de usuários (caso exista)
+    txid VARCHAR(255) UNIQUE,                                -- Identificador único da transação (ex: Pix txid)
+    
+    -- Snapshot dos dados do cliente no momento da compra
+    customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255) NOT NULL,
+    customer_cpf VARCHAR(14) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    
+    -- Endereço de Entrega (Snapshot)
+    cep VARCHAR(10) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    number VARCHAR(20) NOT NULL,
+    complement VARCHAR(255),
+    neighborhood VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+
+    -- Frete e Valores
+    shipping_service VARCHAR(50) NOT NULL,     -- Ex: PAC, SEDEX (Melhor Envio)
+    shipping_cost DECIMAL(10, 2) NOT NULL,     -- Valor do frete
+    subtotal DECIMAL(10, 2) NOT NULL,          -- Subtotal dos produtos
+    total DECIMAL(10, 2) NOT NULL,             -- Total geral (produtos + frete)
+
+    -- Pagamento e Status
+    payment_method VARCHAR(30) NOT NULL,       -- pix, credit_card, debit_card
+    status VARCHAR(50) DEFAULT 'pending',      -- pending, approved, cancelled, refunded
+    
+    -- Itens do pedido salvos em JSON (mantém o histórico exato dos produtos e preços pagos)
+    items JSONB NOT NULL,                      
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para agilizar buscas
+CREATE INDEX IF NOT EXISTS idx_orders_txid ON orders(txid);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaArrowRight, FaArrowLeft, FaSpinner } from "react-icons/fa";
-import { CheckoutFormData } from "@/types/checkout"; // Ajuste o caminho se necessário
+import { CheckoutFormData } from "@/types/checkout";
 
 interface AddressStepProps {
     formData: CheckoutFormData;

@@ -56,7 +56,6 @@ export class EfiController {
           solicitacaoPagador: `Pedido AlziCrochê #${newOrder.id || orderTxid}`
         };
 
-        // Chamada oficial idêntica ao seu outro projeto funcional
         const cobResponse = await (efi as any).pixCreateImmediateCharge({}, bodyPix);
         const qrcodeResponse = await efi.pixGenerateQRCode({ id: cobResponse.loc.id });
 
@@ -131,6 +130,60 @@ export class EfiController {
       return res.status(500).json({ 
         error: error?.data?.mensagem || error?.data?.message || 'Erro interno ao processar o pagamento.' 
       });
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 4. WEBHOOK PIX (Recebe a notificação da Efí quando pago)
+  // ---------------------------------------------------------
+  static async webhook(req: Request, res: Response) {
+    try {
+      const pixPagamentos = req.body.pix;
+
+      if (pixPagamentos && pixPagamentos.length > 0) {
+        for (const pagamento of pixPagamentos) {
+          const txid = pagamento.txid;
+          const valorPago = pagamento.valor;
+          console.log(`💰 Pix recebido! TXID: ${txid}, Valor: ${valorPago}`);
+
+          if (txid) {
+            const order = await OrderModel.findByTxid(txid);
+
+            if (order) {
+              await OrderModel.updateStatus(order.id, 'paid');
+              console.log(`✅ Pedido #${order.id} atualizado para 'paid' via Webhook Pix.`);
+            } else {
+              console.warn(`⚠️ Nenhum pedido encontrado para o TXID: ${txid}`);
+            }
+          }
+        }
+      }
+
+      return res.status(200).json({ received: true });
+    } catch (error) {
+      console.error('Erro ao processar webhook da Efí:', error);
+      return res.status(500).json({ error: 'Erro interno no webhook.' });
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 5. CONFIGURAR WEBHOOK NA EFÍ
+  // ---------------------------------------------------------
+  static async configurarWebhook(req: Request, res: Response) {
+    try {
+      const { webhookUrl } = req.body;
+      const pixKey = process.env.EFI_PIX_KEY;
+
+      if (!webhookUrl || !pixKey) {
+        return res.status(400).json({ error: 'A URL do webhook e a chave Pix são obrigatórias.' });
+      }
+
+      await (efi as any).pixConfigWebhook({ chave: pixKey }, { webhookUrl });
+
+      return res.status(200).json({ message: 'Webhook configurado com sucesso na Efí!' });
+    } catch (error: any) {
+      console.error('Erro ao configurar webhook:', error?.data || error);
+      return res.status(500).json({ error: 'Erro ao registar webhook.' });
     }
   }
 }

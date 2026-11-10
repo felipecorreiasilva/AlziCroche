@@ -21,7 +21,7 @@ interface CartContextData {
 }
 
 const CartContext = createContext<CartContextData>({} as CartContextData);
-const STORAGE_KEY = '@ByteFome:cart';
+const STORAGE_KEY = '@AlziCrochê:cart';
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<CartItem[]>([]);

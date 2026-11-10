@@ -71,7 +71,7 @@ export default function CheckoutPage() {
                 try {
                     const response = await api.get(`/orders/${completedOrderData.orderId}`);
                     const orderStatus = response.data?.status;
-                    
+                    console.log("Status do pedido:", orderStatus);
                     if (orderStatus === 'paid' || orderStatus === 'approved') {
                         clearInterval(interval);
                         alert("Pagamento confirmado com sucesso!");
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
                             <div className="flex flex-col gap-3 max-h-60 overflow-y-auto">
                                 {cart.map((item: any, idx: number) => (
                                     <div key={item.product?.id || idx} className="flex justify-between items-center text-xs">
-                                        <span className="text-slate-600 truncate max-w-[200px]">{item.quantity}x {item.product?.name}</span>
+                                        <span className="text-slate-600 truncate max-w-50">{item.quantity}x {item.product?.name}</span>
                                         <span className="font-semibold text-slate-900">R$ {(Number(item.product?.price || 0) * item.quantity).toFixed(2).replace('.', ',')}</span>
                                     </div>
                                 ))}
@@ -228,7 +228,7 @@ export default function CheckoutPage() {
                             <div className="flex flex-col gap-3 max-h-60 overflow-y-auto">
                                 {cart.map((item: any, idx: number) => (
                                     <div key={item.product?.id || idx} className="flex justify-between items-center text-xs">
-                                        <span className="text-slate-600 truncate max-w-[200px]">{item.quantity}x {item.product?.name}</span>
+                                        <span className="text-slate-600 truncate max-w-50">{item.quantity}x {item.product?.name}</span>
                                         <span className="font-semibold text-slate-900">R$ {(Number(item.product?.price || 0) * item.quantity).toFixed(2).replace('.', ',')}</span>
                                     </div>
                                 ))}

@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { userService } from "@/service/userService";
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaHome, FaCity, FaSave, FaSpinner } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaHome, FaCity, FaSave, FaSpinner, FaCamera } from "react-icons/fa";
 
 export default function ProfilePage() {
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const { user, isAuthenticated, isLoading, checkUser } = useAuth() as any;
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -20,6 +20,8 @@ export default function ProfilePage() {
         complement: ""
     });
 
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isFetchingCep, setIsFetchingCep] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
@@ -39,6 +41,9 @@ export default function ProfilePage() {
                 number: user.number || "",
                 complement: user.complement || ""
             });
+            if (user.image_url) {
+                setImagePreview(`${process.env.NEXT_PUBLIC_API_URL}${user.image_url}`);
+            }
         }
     }, [user]);
 
@@ -86,13 +91,21 @@ export default function ProfilePage() {
             const formatted = formatCep(value);
             setFormData((prev) => ({ ...prev, cep: formatted }));
 
-            // Se completou 8 dígitos numéricos, dispara o ViaCEP automaticamente
             const clean = value.replace(/\D/g, "");
             if (clean.length === 8) {
                 fetchAddressByCep(clean);
             }
         } else {
             setFormData({ ...formData, [name]: value });
+        }
+    };
+
+    // Manipula a seleção da nova imagem de perfil
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedImage(file);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
@@ -104,13 +117,35 @@ export default function ProfilePage() {
         setMessage({ type: "", text: "" });
 
         try {
-            // Remove caracteres especiais do CEP antes de enviar ao servidor (envia apenas números)
-            const payload = {
-                ...formData,
-                cep: formData.cep.replace(/\D/g, "")
-            };
+            // Se houver imagem selecionada, usamos FormData para enviar arquivo + campos
+            if (selectedImage) {
+                const data = new FormData();
+                data.append("name", formData.name);
+                data.append("phone", formData.phone);
+                data.append("cep", formData.cep.replace(/\D/g, ""));
+                data.append("city", formData.city);
+                data.append("state", formData.state);
+                data.append("neighborhood", formData.neighborhood);
+                data.append("address", formData.address);
+                data.append("number", formData.number);
+                data.append("complement", formData.complement);
+                data.append("image", selectedImage); // Nome do campo esperado pelo multer no backend
 
-            await userService.updateUser(user.id, payload);
+                await userService.updateUser(user.id, data);
+            } else {
+                // Apenas JSON padrão se não alterou a imagem
+                const payload = {
+                    ...formData,
+                    cep: formData.cep.replace(/\D/g, "")
+                };
+                await userService.updateUser(user.id, payload);
+            }
+
+            // Atualiza os dados do usuário no contexto global
+            if (typeof checkUser === 'function') {
+                await checkUser();
+            }
+
             setMessage({ type: "success", text: "Perfil atualizado com sucesso!" });
         } catch (error: any) {
             console.error("Erro ao atualizar perfil:", error);
@@ -152,20 +187,32 @@ export default function ProfilePage() {
         <div className="min-h-screen bg-white text-slate-800 pt-32 pb-20 px-4 md:px-8">
             <div className="max-w-4xl mx-auto">
                 
-                {/* Cabeçalho do Perfil */}
+                {/* Cabeçalho do Perfil com Upload de Foto */}
                 <div className="bg-slate-900 text-white p-8 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-6 mb-8 border border-slate-800">
-                    <div className="relative">
-                        {user?.image_url ? (
-                            <img
-                                src={`${process.env.NEXT_PUBLIC_API_URL}${user.image_url}`}
-                                alt={user.name}
-                                className="h-24 w-24 rounded-full object-cover border-2 border-emerald-400 shadow-md"
-                            />
-                        ) : (
-                            <div className="h-24 w-24 rounded-full bg-slate-800 border-2 border-emerald-400 flex items-center justify-center text-3xl font-bold text-emerald-400">
-                                {user?.name.charAt(0).toUpperCase()}
+                    <div className="relative group">
+                        <label htmlFor="avatar-upload" className="cursor-pointer block relative">
+                            {imagePreview ? (
+                                <img
+                                    src={imagePreview}
+                                    alt={user?.name}
+                                    className="h-24 w-24 rounded-full object-cover border-2 border-emerald-400 shadow-md transition group-hover:opacity-80"
+                                />
+                            ) : (
+                                <div className="h-24 w-24 rounded-full bg-slate-800 border-2 border-emerald-400 flex items-center justify-center text-3xl font-bold text-emerald-400 transition group-hover:opacity-80">
+                                    {user?.name?.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                <FaCamera className="text-white text-xl" />
                             </div>
-                        )}
+                        </label>
+                        <input 
+                            id="avatar-upload"
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={handleImageChange}
+                        />
                     </div>
 
                     <div className="text-center md:text-left">
@@ -177,6 +224,9 @@ export default function ProfilePage() {
                         </h1>
                         <p className="text-slate-400 text-xs md:text-sm mt-1">
                             {user?.email}
+                        </p>
+                        <p className="text-[11px] text-emerald-400 mt-2">
+                            Clique na sua foto para alterar a imagem de perfil.
                         </p>
                     </div>
                 </div>

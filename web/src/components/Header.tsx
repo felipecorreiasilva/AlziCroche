@@ -12,7 +12,13 @@ import { useAuth } from "@/context/AuthContext";
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { totalItems, setIsCartOpen } = useCart();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth() as any;
+
+  // Normaliza a propriedade da imagem do usuário para evitar falhas de nomenclatura
+  const userImage = user?.image_url || user?.avatar || user?.avatar_url || user?.photo;
+  const fullImageUrl = userImage 
+    ? (userImage.startsWith('http') ? userImage : `${process.env.NEXT_PUBLIC_API_URL}${userImage}`)
+    : null;
 
   return (
     <header className="z-50 fixed w-full flex justify-between items-center py-4 px-6 md:px-16 bg-[#0F172A] text-white border-b border-slate-800">
@@ -44,19 +50,17 @@ export default function Header() {
           </li>
           <li>
             {isLoading ? (
-              /* Estado de carregamento inicial (evita o piscar) */
               <div className="h-8 w-28 bg-slate-800/80 animate-pulse rounded-lg" />
             ) : isAuthenticated && user ? (
-              /* Se estiver autenticado: Mostra a foto/avatar linkada ao perfil e opção de Sair */
               <div className="flex items-center gap-3">
                 <Link 
                   href="/profile" 
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                   title="Ver perfil"
                 >
-                  {user.image_url ? (
+                  {fullImageUrl ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${user.image_url}`}
+                      src={fullImageUrl}
                       alt={user.name}
                       className="h-9 w-9 rounded-full object-cover border border-slate-700 shadow-inner"
                     />
@@ -66,7 +70,7 @@ export default function Header() {
                   <div className="flex flex-col text-[11px] leading-tight">
                     <span className="text-slate-400">Olá,</span>
                     <span className="font-semibold text-slate-100 max-w-30 truncate" title={user.name}>
-                      {user.name.split(' ')[0]}
+                      {user.name?.split(' ')[0]}
                     </span>
                   </div>
                 </Link>
@@ -81,7 +85,6 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              /* Se NÃO estiver autenticado: Mostra Entrar e Criar Conta */
               <div className="flex items-center gap-x-2">
                 <CgProfile className="h-6 w-6 text-slate-300" />
                 <div className="flex flex-col text-[11px] leading-tight">
@@ -148,7 +151,6 @@ export default function Header() {
           
           <hr className="border-slate-800 my-2" />
 
-          {/* Perfil no Mobile */}
           {isLoading ? (
             <div className="h-10 w-full bg-slate-800/80 animate-pulse rounded-xl" />
           ) : isAuthenticated && user ? (
@@ -158,9 +160,9 @@ export default function Header() {
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
               >
-                {user.image_url ? (
+                {fullImageUrl ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${user.image_url}`}
+                    src={fullImageUrl}
                     alt={user.name}
                     className="h-10 w-10 rounded-full object-cover border border-slate-700"
                   />
